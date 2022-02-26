@@ -316,7 +316,6 @@ defmodule Corsica do
     |> Map.update!(:log, fn levels -> levels && Keyword.merge(@default_log_levels, levels) end)
     |> maybe_update_option(:max_age, &to_string/1)
     |> maybe_update_option(:expose_headers, &Enum.join(&1, ", "))
-    |> convert_tuple_origins()
   end
 
   defp to_options_struct(opts), do: struct(Options, opts)
@@ -342,21 +341,29 @@ defmodule Corsica do
     end
   end
 
-  defp convert_tuple_origins(opts) do
-    opts
-    |> Keyword.fetch!(:origins)
-    |> Enum.map(fn
-      {module, function} ->
-        if Code.ensure_compiled(module) == {:module, module} and
-             function_exported?(module, function, 2) do
-          {:v2, module, function}
-        else
-          IO.warn("TBD")
-          {:v1, module, function}
-        end
+  defp convert_tuple_origins(options) do
+    Keyword.update(options, :origins, "*", fn origins ->
+      case origins do
+        "*" ->
+          origins
 
-      origin ->
-        origin
+        origins ->
+          origins
+          |> List.wrap()
+          |> Enum.map(fn
+            {module, function} ->
+              if Code.ensure_compiled(module) == {:module, module} and
+                   function_exported?(module, function, 2) do
+                {:v2, module, function}
+              else
+                IO.warn("TBD")
+                {:v1, module, function}
+              end
+
+            origin ->
+              origin
+          end)
+      end
     end)
   end
 

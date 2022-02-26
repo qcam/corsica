@@ -26,7 +26,7 @@ defmodule CorsicaTest do
 
     test "value of :origins" do
       assert sanitize_opts(origins: ["foo.bar", ~r/.*/, {MyMod, :my_fun}]).origins ==
-               ["foo.bar", ~r/.*/, {MyMod, :my_fun}]
+               ["foo.bar", ~r/.*/, {:v1, MyMod, :my_fun}]
 
       assert sanitize_opts(origins: "*").origins == "*"
       assert sanitize_opts(origins: []).origins == []
