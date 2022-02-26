@@ -352,13 +352,7 @@ defmodule Corsica do
           |> List.wrap()
           |> Enum.map(fn
             {module, function} ->
-              if Code.ensure_compiled(module) == {:module, module} and
-                   function_exported?(module, function, 2) do
-                {:v2, module, function}
-              else
-                IO.warn("TBD")
-                {:v1, module, function}
-              end
+              {:v2, module, function}
 
             origin ->
               origin
